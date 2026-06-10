@@ -38,7 +38,7 @@ function loadConfig() {
       cfg[k.trim()] = rest.join('=').trim();
     }
   });
-  return cfg.REFERRAL_URL || '';
+  return { referralUrl: cfg.REFERRAL_URL || '', turnstileToken: cfg.TURNSTILE_TOKEN || '' };
 }
 
 // ── Load data.txt ─────────────────────────────────────
@@ -78,8 +78,8 @@ async function siweSign(privkey, walletAddress, handle) {
 }
 
 // ── Purinta session/create ────────────────────────────
-async function purintaCreate(wallet, handle, signature, referrerWallet) {
-  const payload = { wallet, handle, signature, turnstileToken: '', referrerWallet };
+async function purintaCreate(wallet, handle, signature, turnstileToken, referrerWallet) {
+  const payload = { wallet, handle, signature, turnstileToken, referrerWallet };
   const res = await fetch('https://tribal-campaign.purinta.xyz/api/session/create', {
     method: 'POST',
     headers: {
@@ -179,6 +179,7 @@ async function runAccount(idx, privkey, walletData) {
   // Referrer wallet dari privkey pertama (index 0)
   const env = loadEnv();
   const privkeys = loadPrivkeys(env);
+  const cfg = loadConfig();
   const referrerWallet = new ethers.Wallet(privkeys[0]).address;
 
   log('Signing SIWE...');
@@ -187,7 +188,7 @@ async function runAccount(idx, privkey, walletData) {
   log('Creating Purinta session...');
   let sessionResp;
   try {
-    sessionResp = await purintaCreate(walletAddress, handle, signature, referrerWallet);
+    sessionResp = await purintaCreate(walletAddress, handle, signature, cfg.turnstileToken, referrerWallet);
     log(`Session response: ${JSON.stringify(sessionResp)}`, '@');
   } catch (e) {
     log(`Session error: ${e.message}`, '!');
