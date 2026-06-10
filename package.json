@@ -1,0 +1,11 @@
+{
+  "name": "purinta",
+  "version": "1.0.0",
+  "main": "purinta.js",
+  "scripts": {
+    "start": "node purinta.js"
+  },
+  "dependencies": {
+    "ethers": "^6.0.0"
+  }
+}
