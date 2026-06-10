@@ -66,18 +66,12 @@ function loadPrivkeys(env) {
 }
 
 // ── SIWE Sign ─────────────────────────────────────────
-async function siweSign(privkey, walletAddress) {
-  const now = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
-  const nonce = Math.floor(Date.now() / 1000).toString();
+async function siweSign(privkey, walletAddress, handle) {
   const message =
-    `tribal-campaign.purinta.xyz wants you to sign in with your Ethereum account:\n` +
-    `${walletAddress}\n\n` +
-    `Sign in to Purinta Tribal Campaign\n\n` +
-    `URI: https://tribal-campaign.purinta.xyz\n` +
-    `Version: 1\n` +
-    `Chain ID: 1\n` +
-    `Nonce: ${nonce}\n` +
-    `Issued At: ${now}`;
+    `tribal-campaign.purinta.xyz wants you to sign in for the Purinta tribal campaign.\n\n` +
+    `Wallet: ${walletAddress}\n` +
+    `X handle: @${handle}\n\n` +
+    `Signing this message does not authorize any transaction.`;
   const wallet = new ethers.Wallet(privkey);
   const signature = await wallet.signMessage(message);
   return signature;
@@ -188,7 +182,7 @@ async function runAccount(idx, privkey, walletData) {
   const referrerWallet = new ethers.Wallet(privkeys[0]).address;
 
   log('Signing SIWE...');
-  const signature = await siweSign(privkey, walletAddress);
+  const signature = await siweSign(privkey, walletAddress, handle);
 
   log('Creating Purinta session...');
   let sessionResp;
