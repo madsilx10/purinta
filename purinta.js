@@ -41,6 +41,27 @@ function loadConfig() {
   return { referralUrl: cfg.REFERRAL_URL || '', turnstileToken: cfg.TURNSTILE_TOKEN || '' };
 }
 
+
+// ── Turnstile Solver ──────────────────────────────────
+const SOLVER_URL = 'https://turnstile-xma51iay.b4a.run/solve';
+const PURINTA_SITEKEY = 'a09de68a0a705d0f';
+const PURINTA_URL = 'https://tribal-campaign.purinta.xyz/join';
+
+async function getTurnstileToken() {
+  log('Solving Turnstile via solver...');
+  const res = await fetch(SOLVER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sitekey: PURINTA_SITEKEY, siteurl: PURINTA_URL }),
+  });
+  const data = await res.json();
+  if (data.token) {
+    log(`Turnstile token: ${data.token.slice(0, 30)}...`);
+    return data.token;
+  }
+  throw new Error(`Solver error: ${JSON.stringify(data)}`);
+}
+
 // ── Load data.txt ─────────────────────────────────────
 function loadWallets() {
   const content = fs.readFileSync('data.txt', 'utf8');
@@ -187,8 +208,15 @@ async function runAccount(idx, privkey, walletData) {
 
   log('Creating Purinta session...');
   let sessionResp;
+  let turnstileToken;
   try {
-    sessionResp = await purintaCreate(walletAddress, handle, signature, cfg.turnstileToken, referrerWallet);
+    turnstileToken = await getTurnstileToken();
+  } catch (e) {
+    log(`Solver error: ${e.message}`, '!');
+    return false;
+  }
+  try {
+    sessionResp = await purintaCreate(walletAddress, handle, signature, turnstileToken, referrerWallet);
     log(`Session response: ${JSON.stringify(sessionResp)}`, '@');
   } catch (e) {
     log(`Session error: ${e.message}`, '!');
