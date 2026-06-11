@@ -43,7 +43,7 @@ function loadConfig() {
 
 
 // ── Turnstile Solver ──────────────────────────────────
-const SOLVER_URL = 'https://turnstile-xma51iay.b4a.run/solve';
+const SOLVER_URL = 'https://madsil-turnstile.hf.space/solve';
 const PURINTA_SITEKEY = 'a09de68a0a705d0f';
 const PURINTA_URL = 'https://tribal-campaign.purinta.xyz/join';
 
